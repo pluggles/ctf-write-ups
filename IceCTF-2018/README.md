@@ -8,7 +8,7 @@ We receive a zip file named 'fs.zip' which contains a partial root file system o
 From just outsize of the unzipped directory run this:
 ```tree -aH . > web.html```
 
-From there we can see everything in the directory the first thing that sticks out to me is the clue.png but that turned out to be a red herring...
+From there we can see everything in the directory the first thing that sticks out to me is the clue.png but that turned out to be a ![red herring](clue.png)
 
 Next I notice the `hzpxbsklqvboyou` file which contains:
 ```8NHY25mYthGfs5ndwx2Zk1lcaFGc4pWdVZFQoJmT8NHY25mYthGfs5ndwx2Zk1lcaFGc4pWdVZFQoJmT8NHY25mYthGfs5ndwx2Zk1lcaFGc4pWdVZFQoJmT8NHY25mYthGfs5ndwx2Zk1lcaFGc4pWdVZFQoJmT8NHY25mYthGfs5ndwx2Zk1lcaFGc4pWdVZFQoJmT```
