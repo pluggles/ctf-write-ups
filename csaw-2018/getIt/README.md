@@ -1,7 +1,11 @@
 # Get It
+
 Description: Do you get it?
+
 points: 50
+
 host: pwn.chal.csaw.io
+
 port: 9001
 
 ![challenge description](titlecard.png)
