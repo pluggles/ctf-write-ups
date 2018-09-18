@@ -163,7 +163,7 @@ So we have a decent understanding of what we want to: overflow the gets buffer a
 
 We Just need to know how to do that. and that brings us to a very important concept, the Stack Frame.
 
-##Stack Frame
+## Stack Frame
 There are different types of memory segments, i don't want to go into the details of them here (Because I don't actually know ther details) but feel free to read about them [here](https://en.wikipedia.org/wiki/Data_segment)
 
 But we just want to focus on the  Stack, and stack frames.
