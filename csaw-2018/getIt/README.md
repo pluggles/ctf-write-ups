@@ -24,11 +24,11 @@ and we can then input any one string and the prgram exits:
 
 And just as a sanity check if we net cat to the servers address and port provided for us:
 ![greeting](greeting.png)
-e see similar behavior. The server execuatable echos back what we type, and then stays alive until we hit enter.
+we see similar behavior. The server executable echos back what we type, and then stays alive until we hit enter.
 
 Alright now that we have an idea of how the program functions, lets see if we can figure out what we should be doing.
 
-There are a few ways we can go about this. We can open up the project in a disassembler such as IDA Pro or Binar Ninja, or we  can use objdump to view the assembly.
+There are a few ways we can go about this. We can open up the project in a disassembler such as IDA Pro or Binary Ninja, or we  can use objdump to view the assembly.
 
 Lets start with objdump and go from there:
 ```
@@ -67,20 +67,21 @@ That will output a lot of text but as we scroll through that file we some some i
 
 looks like we have a main function `00000000004005c7 <main>:` , and a `00000000004005b6 <give_shell>` function, that probably will give us a shell if we can get to it somehow, and from there we could probably use that shell on the server the challenge is running to cat a file that contains a flag..
 
-It also looks like the main function is pretty small looks like the is a `puts` call and a `gets` call. And what we know about `gets` is that it is easily exploitable for a buffer overflow. Although we probably could have guessed that from te name of the challenge, or the name of the executable, or the prompt we get when the program was ran...
+It also looks like the main function is pretty small. Looks like there is a `puts` call and a `gets` call. And what we know about `gets` is that it is easily exploitable for a buffer overflow. Although we probably could have guessed that this would be a gets buffer overflow from the name of the challenge, or the name of the executable, or the prompt we get when the program was ran...
 
-To verify what the give_shell function is doing, we can analyze that `give_shell` asembly, the important bit the are these to lines:
+To verify what the give_shell function is doing, we can analyze that `give_shell` assembly, the important bits there are these two lines:
 ```
   4005ba:	bf 84 06 40 00       	mov    $0x400684,%edi
   4005bf:	e8 bc fe ff ff       	callq  400480 <system@plt>
 ```
-which basically call the `System` function with the argument `0x400684`
+which basically calls the `System` function with the argument `0x400684`
 and by checking what is in that address in gdb:
 ```
 $gdb ./get_it
 pwndbg> x/s 0x400684
 0x400684:	"/bin/bash"
 ```
+You can see we are calling `system("/bin/bash");`
 Or you can just open the file in IDA Pro and get some nice C like functions auto made for you that tell you the same thing:
 
 ```
@@ -101,10 +102,10 @@ int give_shell()
 
 ...but thats not as much fun.
 
-But now that we know wha the `give_shell` function does, we need to figure out how to get there, and to do that we need to understand the main function, and how `puts` and `gets` work.
+But now that we know what the `give_shell` function does, we need to figure out how to get there, and to do that we need to understand the main function, and how `puts` and `gets` work.
 
 ### puts
-I can go into a lot of detail about what puts does, and by that I mean other people that actually know how puts works on a very low level can go into a lot of detail about how puts works, but for the sake of this write up all you need to know about Puts is that it takes one argument and prints it, the argument being the value at edi (a register) is pointing to:
+I can go into a lot of detail about what puts does, and by that I mean other people that actually know how puts works on a very low level can go into a lot of detail about how puts works, but for the sake of this write up all you need to know about Puts is that it takes one argument and prints it, the argument being the value that edi (a register) is pointing to:
 ```
 pwndbg> disassemble main
 Dump of assembler code for function main:
@@ -125,7 +126,7 @@ Dump of assembler code for function main:
 End of assembler dump.
 ```
 
-in case if you don't know `mov` works by saying the value on the left = the value on the right, so in this case 
+in case if you don't know `mov` works by my taking the value on the right, and saving it to the variable on the left, so in this case
 `0x00000000004005d6 <+15>:	mov    edi,0x40068e` the register edi is pointing to whatever value is stored at `0x40068e`
 
 And if we check gdb to see what that value is:
@@ -138,7 +139,7 @@ So that covers puts, time for gets
 
 ### gets
 
-from the man page:
+From the man page:
 `gets` - "Get a string from standard input (DEPRECATED)"
 and also ++ Never use this function ++
 
