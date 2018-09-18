@@ -263,4 +263,4 @@ and then lets send our payload to the service and see what happens:
 
 Success: `flag is flag{y0u_deF_get_itls}`
 
-*Also note that originally i messed up and made this a lot harder for myself by not accounting for the 8 bytes of RBP and initially was sending a 32 byte payload plus an address which was causing all sorts of problems. you can see how i dealt with that in [my original script](payloadGenerator.py)
+*Also note that originally i messed up and made this a lot harder for myself by not accounting for the 8 bytes of RBP and initially was sending a 32 byte payload plus an address which was causing all sorts of problems. you can see how i dealt with that in [my original script](Payloadgenerator.py)
