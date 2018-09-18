@@ -145,31 +145,32 @@ So that covers puts, time for gets
 
 From the man page:
 `gets` - "Get a string from standard input (DEPRECATED)"
-and also ++ Never use this function ++
 
-so yeah, makes sense this will be used in a ctf
+and also Never use this function
 
-furthr down the man page we get a description of hop gets works:
+So yeah, makes sense this will be used in a ctf
+
+further down the man page we get a description of how gets works:
 ```
 gets()  reads  a  line from stdin into the buffer pointed to by s until
        either a terminating newline or EOF, which it replaces with a null byte
        ('\0').  No check for buffer overrun is performed (see BUGS below).
 ```
 
-What that means is that gets accepts one argument, which will be the address in memeory it writes to, and then it will write to it everything it reads in, with no regard to the acual size of available at the address in memory, so we can write past the buffer, overflowing it, to get to a new place in memory...hence the name buffer overflow.
+What that means is that gets accepts one argument, which will be the address in memeory it writes to, and then it will write to it everything it reads in, with no regard to the actual size of available buffer at the address in memory, so we can write past the buffer, overflowing it, to get to a new place in memory...hence the name buffer overflow.
 
 So we have a decent understanding of what we want to: overflow the gets buffer and some how get that to run the get_shell command.
 
 We Just need to know how to do that. and that brings us to a very important concept, the Stack Frame.
 
 ##Stack Frame
-There are different types of memory segemtns, i don't want to go into the details of them here (Because I don't actually know ther details) but feel free to read about them [here](https://en.wikipedia.org/wiki/Data_segment)
+There are different types of memory segments, i don't want to go into the details of them here (Because I don't actually know ther details) but feel free to read about them [here](https://en.wikipedia.org/wiki/Data_segment)
 
 But we just want to focus on the  Stack, and stack frames.
 
-The stack is composed of stack frames that get pushed onto the top of a stack frame when ever a function is called. A stack frame is how a function keeps track of its state without corrupting other functions.
+The stack is composed of stack frames that get pushed onto the top of a stack when ever a function is called. A stack frame is how a function keeps track of its state without corrupting other functions.
 
-A stack frames holds information abou a functions local varibles, the location in memory that the function must return to, and the location on the stack of the frame of its parent (the function that called the current function)
+A stack frames holds information about a functions local varibles, the location in memory that the function must return to, and the location on the stack of the frame of its parent (the function that called the current function)
 
 It may help to visualize what is going on:
 
@@ -177,7 +178,7 @@ It may help to visualize what is going on:
 
 You can ignore the arguments for now, the main things to focus on is the current frame, the %ebp (or for a 64 bit program the %rbp) which  is the "Base Pointer" and points to the bottom of the current stack frame., the %esp (or %rsp on a 64 bit program) points to the top of the current stack frame., and then the return address, is where our program will jump to when the function finsihes.
 
-But why am I telling you this? lets take another look at our gets call in the main function:
+But why am I telling you this? Lets take another look at our gets call in the main function:
 
 ```
    0x00000000004005e0 <+25>:	lea    rax,[rbp-0x20]
@@ -225,15 +226,15 @@ pwndbg> x/6xg $rbp - 0x20
 0x7fffffffdc50:	0x4141414141414141	0x4141414141414141
 0x7fffffffdc60:	0x0000000000400600	0x00007ffff7a05b97
 ``` 
-And you will see our 32 A's represented in dex (0x41) followed by our rbp and then a return address.
+And you will see our 32 A's represented in hex (0x41) followed by our rbp and then a return address.
 
-So we now know how many bytes we have to write to get to that return address so we can over write i with the address (32+8)
+So we now know how many bytes we have to write to get to that return address so we can over write it (32+8) with the address of our give_shell function 
 
 But what do we need to put in its place? simple, the starting address of the give_shell function.
 which we have from our disassembly from objdump `00000000004005b6`
 * note you can also get this address from gdb with `p give_shell`
 # Exploit
-so we need our string to look like40 charachters of anything, followed by that address, but we need to make sure the address is inputted correctly, which means we need to insert it as hex, and in little endian format.
+so we need our string to look like 40 charachters of anything, followed by that address, but we need to make sure the address is inputted correctly, which means we need to insert it as hex, and in little endian format.
 
 So instead of `00000000004005b6` we have `\xb6\x05\x40\x00\x00\x00\x00\x00`
 
@@ -253,12 +254,13 @@ print myPayload
 ```
 simple enough and then we can just write that to a file
 with: `python pwn1.py > fuzzing`
-then verify we wrote our string correctly: `cat fuzzing`
+Then verify we wrote our string correctly: `cat fuzzing`
 and then lets send our payload to the service and see what happens:
 ![complete](complete.png)
 
 
 *note the `-` at the end of my cat command stands for standard input, and that keeps my terminal open for reading, so that i can send additonal commands to the program after the payload gets sent.
-success: `flag is flag{y0u_deF_get_itls}`
 
-*Also note that originally i messed up and made this a lot harder formyself by not accounting for the 8 bytes of RBP and initially was sending a 32 byte payload plus an address which was causing all sorts of problems. you can see how i dealt with that in [my original script](payloadGenerator.py)
+Success: `flag is flag{y0u_deF_get_itls}`
+
+*Also note that originally i messed up and made this a lot harder for myself by not accounting for the 8 bytes of RBP and initially was sending a 32 byte payload plus an address which was causing all sorts of problems. you can see how i dealt with that in [my original script](payloadGenerator.py)
